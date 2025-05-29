@@ -57,8 +57,6 @@
       display: none;
     }
   </style>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
   <div id="passwordContainer">
@@ -99,23 +97,12 @@
   </div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
     function checkPassword() {
       const pw = document.getElementById('passwordInput').value;
       if (pw === 'remenyi1991') {
         document.getElementById('passwordContainer').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
+        betoltes();
       } else {
         alert('Hibás jelszó!');
       }
@@ -132,22 +119,20 @@
         return;
       }
 
-      db.collection("aruatvetel").add({
-        datum,
-        raktaros,
-        cegnev,
-        raklap
-      });
-
+      const bejegyzes = { datum, raktaros, cegnev, raklap };
+      const lista = JSON.parse(localStorage.getItem('aruatvetel')) || [];
+      lista.unshift(bejegyzes);
+      localStorage.setItem('aruatvetel', JSON.stringify(lista));
       document.getElementById('cegnev').value = '';
       document.getElementById('raklap').value = '';
+      betoltes();
     }
 
-    db.collection("aruatvetel").orderBy("datum", "desc").onSnapshot((snapshot) => {
-      const lista = document.getElementById('lista');
-      lista.innerHTML = '';
-      snapshot.forEach(doc => {
-        const data = doc.data();
+    function betoltes() {
+      const lista = JSON.parse(localStorage.getItem('aruatvetel')) || [];
+      const tbody = document.getElementById('lista');
+      tbody.innerHTML = '';
+      lista.forEach(data => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${new Date(data.datum).toLocaleString('hu-HU')}</td>
@@ -155,9 +140,9 @@
           <td>${data.cegnev}</td>
           <td>${data.raklap}</td>
         `;
-        lista.appendChild(tr);
+        tbody.appendChild(tr);
       });
-    });
+    }
   </script>
 </body>
 </html>
